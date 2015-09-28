@@ -1,8 +1,7 @@
 request-Alerts_Outages
 ======================
 
-Installation
-============
+<h3>Installation</h3>
 
 
 Alerts_Outages is a utility that bridges service data. Users can subscribe to various services that will then keep the user updatred about events effecting those services in order of importance 
@@ -16,16 +15,16 @@ Alerts_Outages is a utility that bridges service data. Users can subscribe to va
 
 3. import the following JS file into any files you want to host the plugin. place it below the other JS files in the document
 
-	<<script type="text/javascript" src="<%=bundle.bundlePath()%>packages/Alerts_Outages/assets/js/alertsQuery.js"></script>>
+	<script type="text/javascript" src="<%=bundle.bundlePath()%>packages/Alerts_Outages/assets/js/alertsQuery.js"></script>
 
 
 4. import the following div into the HTML of the file (this will be where the plugin manifests in the HTML)
 
-	<<div id="alertsQuery"></div>>
+	<div id="alertsQuery"></div>
 
 
-How to Use
-==========
+<h3>How to Use</h3>
+
 
 	the user accesses the alerts and outages page, clicks on the star of any services s/he wishes to subscribe to. these services can also be clicked on to expand showing greater detail.
 	after subscribing, the user will be able to any events as they relate to the selected service on the page/s that have the plugin installed and can use the plugin to navigate back to the item for further detail.
