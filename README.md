@@ -16,12 +16,12 @@ Alerts_Outages is a utility that bridges service data. Users can subscribe to va
 
 3. import the following JS file into any files you want to host the plugin. place it below the other JS files in the document
 
-	'<script type="text/javascript" src="<%=bundle.bundlePath()%>packages/Alerts_Outages/assets/js/alertsQuery.js"></script>'
+	<<script type="text/javascript" src="<%=bundle.bundlePath()%>packages/Alerts_Outages/assets/js/alertsQuery.js"></script>>
 
 
 4. import the following div into the HTML of the file (this will be where the plugin manifests in the HTML)
 
-	'<div id="alertsQuery"></div>'
+	<<div id="alertsQuery"></div>>
 
 
 How to Use
