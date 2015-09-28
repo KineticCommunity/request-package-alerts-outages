@@ -1,0 +1,47 @@
+<%--
+    Notes:
+    1.  Determine the abosolute file path to the translation files on the webserver, which is required for resource bundle creation.
+    2.  Set the resourceBundle variables that will be used in this package.
+    3.  Populate the resource bundle i18nValues for the appropriate resourceBundles, which are used in JavaSript in the common head.jspf. 
+        These i18nValues are stored in the property files as "javascript.<keyvalue>".  The i18nValues variable is usually started in the 
+        common languageInitialization.jspf file.
+    4.  Set the languge for the template page content and make it available as the property "templatePageContent" for core to use.
+--%>
+<%
+    // Set template shared resource bundle (includes common service item translations)
+    ResourceBundle templateSharedResourceBundle = ThemeLocalizer.getResourceBundle(
+        "templateShared",
+        bundle.getProperty("preferredLocale"),
+        getServletContext().getRealPath(bundle.relativePackagePath()) +
+        File.separator + "assets" + File.separator + "languages"
+    );
+    // Set templateTranslationPath to package path for now
+    String templateTranslationPath = packageTranslationPath;
+    // Get survey instance id
+    String templateInstanceId = customerRequest.getTemplateId();
+    // Determine if context exists
+    if(context != null) {
+        // Get translation attribute from template
+        TemplateAttribute[] attributeTranslationDirectory = TemplateAttribute.getAttributeValue(context, templateInstanceId, "Translation Directory");
+        // If it exists
+        if (attributeTranslationDirectory.length > 0) {
+            // Get value set to template locale property files
+            templateTranslationPath = templateTranslationPath + File.separator + attributeTranslationDirectory[0].getValue();
+        }
+    }
+    // Set template resource bundle
+    ResourceBundle templateResourceBundle = ThemeLocalizer.getResourceBundle("template", bundle.getProperty("preferredLocale"), templateTranslationPath);
+    // Set the i18nValues for template shared resource bundle
+    bundle.setProperty("i18nValues", ThemeLocalizer.getJavaScriptValues(templateSharedResourceBundle, bundle.getProperty("i18nValues")));
+    // Set the i18nValues for template resource bundle
+    bundle.setProperty("i18nValues", ThemeLocalizer.getJavaScriptValues(templateResourceBundle, bundle.getProperty("i18nValues")));
+    // Define template page content
+    String templatePageContent = ThemeLocalizer.localizePageContent(
+        customerRequest,
+        serviceItemsResourceBundle, 
+        templateSharedResourceBundle,
+        templateResourceBundle
+    );
+    // Set the template page content property, which is required by core for displaying the localization
+    bundle.setProperty("templatePageContent", templatePageContent);
+%>

@@ -1,0 +1,128 @@
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.List"%>
+<%@page import="com.kd.arsHelpers.HelperContext"%>
+<%@page import="com.bmc.arsys.api.ARException"%>
+<%!
+    /**
+     * Has methods for retrieving cached data
+     */
+    public static class CacheHelper {
+
+        /**
+         * @var Integer one day
+         */
+        private static final Integer DURATION = 86400000;
+
+        /**
+         * Used to lock the process so it's atomic when using the synchronized keyword
+         * 
+         * @var Object
+         */
+        private static final Object submissionStatisticsLock = new Object();
+
+        /**
+         * Used to store when the statistics were last retrieved
+         * 
+         * @var Long
+         */
+        private static volatile Long submissionStatisticslastRetrievedAt;
+
+        /**
+         * @var List<Template> of template models
+         */
+        private static volatile List<Template> submissionStatistics;
+
+        /**
+         * @var SubmissionStatisticsWorkerThread
+         */
+        private static volatile SubmissionStatisticsWorkerThread submissionStatisticsWorker;
+
+        // Make the constructor private so this singleton can't be instantiated
+        private CacheHelper() {}
+
+        public static List<Template> getSubmissionStatistics(HelperContext context, Catalog catalog, String[] excludedTypes, Integer maxResults) {
+            try {
+                // Whenever we create a new Thread, we need to ensure we are creating a copy of the HelperContext (as the ARServerUser object wrapped by HelperContext is not threadsafe).
+                context = context.getCopy();
+            } catch(ARException e) {
+                throw new RuntimeException("Unable to copy user context.", e);
+            }
+            // If the statistics haven't been loaded yet
+            if (submissionStatisticslastRetrievedAt == null) {
+                // Generate the statistics
+                CacheHelper.generateSubmissionStatistics(context, catalog, excludedTypes, maxResults);
+            }
+            // If the statistics are "old"
+            else {
+                synchronized(submissionStatisticsLock) {
+                    if (System.currentTimeMillis() > submissionStatisticslastRetrievedAt + DURATION && submissionStatisticsWorker == null) {
+                        // Create a new thread
+                        submissionStatisticsWorker = new SubmissionStatisticsWorkerThread(context, catalog, excludedTypes, maxResults);
+                        // Start the worker thread
+                        submissionStatisticsWorker.run();
+                    }
+                }
+            }
+            // Return the "cached" statistics
+            return submissionStatistics;
+        }
+
+        private static synchronized void generateSubmissionStatistics(HelperContext context, Catalog catalog, String[] excludedTypes, Integer maxResults) {
+            // If the statistics are "old" (they may not be if multiple requests triggered
+            // the generation of statistics before the first returned)
+            if (submissionStatisticslastRetrievedAt == null || System.currentTimeMillis() > submissionStatisticslastRetrievedAt + DURATION) {
+                // Get popular requests by catalog
+                String[] catalogNames = new String[] {catalog.getName()};
+                // Retrieve statistics
+                List<String> popularTemplateIds = SubmissionStatisticsHelper.getMostCommonTemplateIds(context, catalogNames, excludedTypes, maxResults);
+                // Use these names to get the template models
+                submissionStatistics = CacheHelper.getTemplatesById(context, catalog, popularTemplateIds);
+                // Update the lastRetrievedAt
+                submissionStatisticslastRetrievedAt = System.currentTimeMillis();
+            }
+        }
+
+        /**
+         * @param context
+         * @param catalog
+         * @param templateNames List<String>
+         */
+        public static List<Template> getTemplatesById(HelperContext context, Catalog catalog, List<String> popularTemplateIds) {
+            List<Template> results = new ArrayList<Template>();
+            // Preload the catalog items
+            catalog.preload(context);
+            // Loop through popular template ids
+            for (String popularTemplateId : popularTemplateIds) {
+                // Define template
+                Template template = catalog.getTemplateById(popularTemplateId);
+                // Check for null
+                if(template != null) {
+                    // Add result
+                    results.add(template);
+                }
+            }
+            return results;
+        }
+
+        /**
+         * Worker thread for submission statistics
+         */
+        private static class SubmissionStatisticsWorkerThread implements Runnable {
+            private final HelperContext context;
+            private final Catalog catalog;
+            private final String[] excludedTypes;
+            private final Integer maxResults;
+            public SubmissionStatisticsWorkerThread(HelperContext context, Catalog catalog, String[] excludedTypes, Integer maxResults) {
+                this.context = context;
+                this.catalog = catalog;
+                this.excludedTypes = excludedTypes;
+                this.maxResults = maxResults;
+            }
+            
+            public void run() {
+                CacheHelper.generateSubmissionStatistics(this.context, this.catalog, this.excludedTypes, this.maxResults);
+                CacheHelper.submissionStatisticsWorker = null;
+            }
+        }
+    }
+%>

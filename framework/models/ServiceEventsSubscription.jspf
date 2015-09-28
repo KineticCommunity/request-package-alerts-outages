@@ -1,0 +1,125 @@
+<%!
+    public static class ServiceEventsSubscription {
+        public static final String FORM_NAME = "KS_SRV_Helper";
+        public static final String FIELD_INDEX_1 = "750000601";
+        public static final String FIELD_INDEX_2 = "750000602";
+        public static final String FIELD_INDEX_3 = "750000603";
+        public static final String FIELD_CHARACTER_1 = "750000001";
+        public static final String FIELD_INTEGER_1 = "750000501";
+        public static final String FIELD_ENTRYID = "1";
+		public static final String FIELD_STATUS = "7";
+        
+        public static final String[] FIELD_IDS = new String[] {
+            FIELD_INDEX_1, FIELD_INDEX_2, FIELD_INDEX_3, FIELD_CHARACTER_1, FIELD_ENTRYID
+        };
+        public static final String[] SORT_FIELD_IDS = new String[] { FIELD_INTEGER_1 };
+        
+        
+        public static ServiceEventsSubscription[] find(HelperContext context, String qualification) {
+            ServiceEventsSubscription[] subscriptions = new ServiceEventsSubscription[0];
+
+            SimpleEntry[] subscriptionEntries = ArsBase.find(context, FORM_NAME, qualification, FIELD_IDS, SORT_FIELD_IDS);
+            if (subscriptionEntries != null && subscriptionEntries.length > 0) {
+                subscriptions = new ServiceEventsSubscription[subscriptionEntries.length];
+                for(int i=0;i<subscriptions.length;i++) {
+                    subscriptions[i] = new ServiceEventsSubscription(subscriptionEntries[i]);
+                }
+            }
+            return subscriptions;
+        }
+        
+        public static ServiceEventsSubscription findSingle(HelperContext context, String qualification) {
+            ServiceEventsSubscription subscription = null;
+            SimpleEntry subscriptionEntry = ArsBase.findSingle(context, FORM_NAME, qualification, FIELD_IDS);
+            if (subscriptionEntry!=null) {
+                subscription = new ServiceEventsSubscription(subscriptionEntry);
+            }
+            return subscription;
+        }
+
+        public static Map<String, List<ServiceEventsSubscription>> findByUser(HelperContext context, String username) {
+            String qualification = "'Index Field1' = \"Preference\" AND 'Index Field2' = \"" + username + "\" AND 'Status' = \"Active\"";
+            ServiceEventsSubscription[] subscriptions = find(context, qualification);
+            Map<String, List<ServiceEventsSubscription>> result = new java.util.HashMap<String, List<ServiceEventsSubscription>>();
+            for (ServiceEventsSubscription subscription : subscriptions) {
+                String type = subscription.getType();
+                if (!result.containsKey(type)) {
+                    result.put(type, new java.util.ArrayList<ServiceEventsSubscription>());
+                }
+                result.get(type).add(subscription);
+            }
+            return result;
+        }
+
+
+        
+        public static void createSubscription(HelperContext context, String status, String serviceId) {
+            SimpleEntry entrySave = new SimpleEntry();
+            entrySave.setSchemaName(FORM_NAME);
+            entrySave.setEntryItems(new Hashtable());
+            entrySave.setEntryFieldValue(FIELD_INDEX_1, "Service Subscription");
+            entrySave.setEntryFieldValue(FIELD_INDEX_2, context.getUserName());
+            entrySave.setEntryFieldValue(FIELD_STATUS, status);
+            entrySave.setEntryFieldValue(FIELD_CHARACTER_1, serviceId);
+
+            // Build the helper
+            ArsHelper helper = null;
+            try {
+                helper = new ArsHelper(context, FORM_NAME);
+            } catch (com.bmc.arsys.api.ARException e) {
+                throw new RuntimeException("Unable to initialize an ArsHelper instance.", e);
+            }
+
+            try {
+                helper.doSetSimpleEntry(entrySave);
+            } catch (Exception e) {
+                throw new RuntimeException("There was a problem saving the "+FORM_NAME+" record.", e);
+            }
+        }
+        public static void updateSubscription(HelperContext context, String entryid, String status, String serviceId) {
+            SimpleEntry entrySave = new SimpleEntry();
+            entrySave.setSchemaName(FORM_NAME);
+            entrySave.setEntryItems(new Hashtable());
+            entrySave.setEntryFieldValue(FIELD_ENTRYID, entryid);
+            entrySave.setEntryFieldValue(FIELD_STATUS, status);
+            entrySave.setEntryFieldValue(FIELD_CHARACTER_1, serviceId);
+    
+            // Build the helper
+            ArsHelper helper = null;
+            try {
+                helper = new ArsHelper(context, FORM_NAME);
+            } catch (com.bmc.arsys.api.ARException e) {
+                throw new RuntimeException("Unable to initialize an ArsHelper instance.", e);
+            }
+
+            try {
+                helper.doSetSimpleEntry(entrySave);
+            } catch (Exception e) {
+                throw new RuntimeException("There was a problem saving the "+FORM_NAME+" record.", e);
+            }
+        }
+
+        public static void saveSubscription(HelperContext context, String status, String serviceId) {
+        
+            String qualification = "'Index Field1' = \"Service Subscription\" AND 'Index Field2' = \"" + context.getUserName() + "\" AND 'Character Field1' = \"" + serviceId + "\"";
+            ServiceEventsSubscription favorite = findSingle(context, qualification);
+
+            if(favorite!=null){
+                updateSubscription(context, favorite.getEntryID(), status, serviceId);
+            } else {
+                createSubscription(context, status, serviceId);
+            }
+        }
+		
+
+        private SimpleEntry entry = null;
+
+        public ServiceEventsSubscription(SimpleEntry entry) {
+            this.entry = entry;
+        }
+
+        public String getType() {return entry.getEntryFieldValue(FIELD_INDEX_1);}
+        public String getValue() {return entry.getEntryFieldValue(FIELD_CHARACTER_1);}
+        public String getEntryID() {return entry.getEntryFieldValue(FIELD_ENTRYID);}
+    }
+%>

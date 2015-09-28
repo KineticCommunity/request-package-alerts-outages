@@ -1,0 +1,30 @@
+{
+    "package": "Alerts_Outages",
+    "languages": {
+      "en_US" : "English"
+    },
+    "views": {
+        "default": {
+            "content": "interface/views/package/serviceEvents.jsp",
+            "title": "Package Scaffold"
+        }
+    },
+    "callbacks": {
+        "updateSubscription": {
+            "content": "interface/callbacks/updateSubscription.json.jsp"
+        },
+        "alertsQuery": {
+            "content": "interface/callbacks/alertsQuery.json.jsp"
+        }
+    },
+    "links": {
+        "alertingOutages": {
+            "type": "main-menu",
+            "label": "Alerts_Outages",
+            "class": "package",
+            "description": "Alerts_Outages - displays alerts concerning outages",
+            "icon": "<i class=\"fa fa-gift\"></i>",
+            "displayName": "Alerts_Outages"
+        }
+    }
+}
