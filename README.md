@@ -1,7 +1,9 @@
 request-Alerts_Outages
 ======================
 
-<h2>Installation</h2>
+Installation
+============
+
 
 Alerts_Outages is a utility that bridges service data. Users can subscribe to various services that will then keep the user updatred about events effecting those services in order of importance 
 
@@ -22,7 +24,8 @@ Alerts_Outages is a utility that bridges service data. Users can subscribe to va
 	<div id="alertsQuery"></div>
 
 
-<h2>How to Use</h2>
+How to Use
+==========
 
 	the user accesses the alerts and outages page, clicks on the star of any services s/he wishes to subscribe to. these services can also be clicked on to expand showing greater detail.
 	after subscribing, the user will be able to any events as they relate to the selected service on the page/s that have the plugin installed and can use the plugin to navigate back to the item for further detail.
