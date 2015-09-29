@@ -49,7 +49,7 @@
         Map<String, List<Record>> priorityMap = new java.util.TreeMap<String, List<Record>>();
 %>
 <!-- fills application with content -->
-        <div>
+        <div class="alertsAndOutages">
             <ul class="service-list unstyled" id="service-entries">
                 <%if(servicesObj.isEmpty()){%>
                     <li><strong><%=themeLocalizer.getString("No Services Found")%></strong></li>
@@ -144,16 +144,12 @@
                                     <li>
                                         <a class="list-group-item" href='<%=bundle.getProperty("alertsUrl")%>&view=serviceEvents&id=<%=eventItem.get("ID")%>'>
                                             <div class="inline clearfix">
-                                                <div class="col-xs-6 col-lg-5">
+                                                <div class="col-xs-8">
                                                     <i class="fa fa-circle fa-fw" style='color:<%=priorityStatusMap.get(priority).get("Status Color").toLowerCase()%>'></i>
                                                     <%=themeLocalizer.getString(servicesObj.get(eventItem.get("Service Name")).get("Service Name"))%>
                                                 </div>
-                                                <div class="col-lg-5 hidden-md hidden-sm hidden-xs text-muted small">
+                                                <div class="pull-right col-xs-4 text-muted small">
                                                     <%=themeLocalizer.getString(eventItem.get("Event Summary"))%>
-                                                </div>
-                                                <div class="col-xs-6 col-lg-2 service-time">
-                                                    <i class="fa fa-clock-o"></i>
-                                                    <%=limitedDateFormat.format(formatedDate.parse(eventItem.get("Event Start Date")))%>
                                                 </div>
                                             </div>
                                         </a>
